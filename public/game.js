@@ -236,7 +236,7 @@ function updateLobby() {
 
     const startButton = document.getElementById('startGameButton');
     if (startButton) {
-        startButton.disabled = gameState.players.length < 3;
+        startButton.disabled = gameState.players.length < 2;
     }
 }
 

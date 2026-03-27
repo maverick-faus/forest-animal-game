@@ -76,14 +76,14 @@ class GameRoom {
       this.players.delete(socketId);
     }
 
-    // If game is running and players drop below 3, end game
-    if (this.gameState === 'playing' && this.players.size < 3) {
+    // If game is running and players drop below 2, end game
+    if (this.gameState === 'playing' && this.players.size < 2) {
       this.endGame();
     }
   }
 
   startGame() {
-    if (this.players.size < 3) {
+    if (this.players.size < 2) {
       return false;
     }
 
@@ -243,7 +243,7 @@ io.on('connection', (socket) => {
       io.to(roomId).emit('gameStarted', room.getState());
       console.log(`Game started in room ${roomId}`);
     } else {
-      socket.emit('error', 'Need at least 3 players to start');
+      socket.emit('error', 'Need at least 2 participants to start');
     }
   });
 
