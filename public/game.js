@@ -21,6 +21,11 @@ const SPEED_BOOST_MULTIPLIER = 1.5;
 // For smooth frame-independent movement
 let lastFrameTime = Date.now();
 
+// Mouse/Touch position tracking
+let mouseX = null;
+let mouseY = null;
+let isMouseActive = false;
+
 // Canvas
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas ? canvas.getContext('2d') : null;
@@ -301,6 +306,12 @@ let animationFrameId = null;
 function startGameLoop() {
     if (gameLoopRunning) return;
     gameLoopRunning = true;
+
+    // Reset mouse state
+    isMouseActive = false;
+    mouseX = null;
+    mouseY = null;
+
     gameLoop();
 }
 
@@ -345,11 +356,30 @@ function updatePlayerMovement() {
     let dx = 0;
     let dy = 0;
 
-    // Check keys
-    if (keys['ArrowUp'] || keys['w'] || keys['W']) dy -= 1;
-    if (keys['ArrowDown'] || keys['s'] || keys['S']) dy += 1;
-    if (keys['ArrowLeft'] || keys['a'] || keys['A']) dx -= 1;
-    if (keys['ArrowRight'] || keys['d'] || keys['D']) dx += 1;
+    // Check keyboard input (priority)
+    const keyboardActive = keys['ArrowUp'] || keys['w'] || keys['W'] ||
+                          keys['ArrowDown'] || keys['s'] || keys['S'] ||
+                          keys['ArrowLeft'] || keys['a'] || keys['A'] ||
+                          keys['ArrowRight'] || keys['d'] || keys['D'];
+
+    if (keyboardActive) {
+        // Keyboard controls (takes priority)
+        if (keys['ArrowUp'] || keys['w'] || keys['W']) dy -= 1;
+        if (keys['ArrowDown'] || keys['s'] || keys['S']) dy += 1;
+        if (keys['ArrowLeft'] || keys['a'] || keys['A']) dx -= 1;
+        if (keys['ArrowRight'] || keys['d'] || keys['D']) dx += 1;
+    } else if (isMouseActive && mouseX !== null && mouseY !== null) {
+        // Mouse/Touch controls (when keyboard not pressed)
+        const deltaX = mouseX - gameState.currentPlayer.x;
+        const deltaY = mouseY - gameState.currentPlayer.y;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        // Dead zone - don't move if very close to target
+        if (distance > 20) {
+            dx = deltaX / distance;
+            dy = deltaY / distance;
+        }
+    }
 
     // Apply movement if any key is pressed
     if (dx !== 0 || dy !== 0) {
@@ -718,10 +748,57 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// Prevent context menu on canvas
-canvas?.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-});
+// Mouse/Touch controls
+if (canvas) {
+    // Mouse movement
+    canvas.addEventListener('mousemove', (e) => {
+        if (gameState.currentScreen !== 'game') return;
+
+        const rect = canvas.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+        isMouseActive = true;
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+        isMouseActive = false;
+    });
+
+    // Touch movement (mobile support)
+    canvas.addEventListener('touchmove', (e) => {
+        if (gameState.currentScreen !== 'game') return;
+
+        e.preventDefault(); // Prevent scrolling
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        mouseX = touch.clientX - rect.left;
+        mouseY = touch.clientY - rect.top;
+        isMouseActive = true;
+    }, { passive: false });
+
+    canvas.addEventListener('touchstart', (e) => {
+        if (gameState.currentScreen !== 'game') return;
+
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        mouseX = touch.clientX - rect.left;
+        mouseY = touch.clientY - rect.top;
+        isMouseActive = true;
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', () => {
+        isMouseActive = false;
+    });
+
+    // Prevent context menu on canvas
+    canvas.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+    });
+
+    // Change cursor style for better UX
+    canvas.style.cursor = 'crosshair';
+}
 
 // Initialize
-console.log('🌲 Forest Animal Game loaded!');
+console.log('🌲 Forest Animal Activity loaded!');
