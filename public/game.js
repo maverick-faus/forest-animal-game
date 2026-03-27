@@ -130,17 +130,30 @@ socket.on('joinError', (message) => {
 });
 
 socket.on('gameStateUpdate', (state) => {
-    // Smooth interpolation for remote players
+    const now = Date.now();
+
+    // Advanced interpolation with velocity prediction for remote players
     state.players.forEach(newPlayerState => {
         const existingPlayer = gameState.players.find(p => p.id === newPlayerState.id);
 
         if (existingPlayer && newPlayerState.id !== socket.id) {
-            // Store target position for smooth interpolation
+            // Calculate velocity from position change
+            const oldX = existingPlayer.targetX || existingPlayer.x;
+            const oldY = existingPlayer.targetY || existingPlayer.y;
+            const velocityX = newPlayerState.x - oldX;
+            const velocityY = newPlayerState.y - oldY;
+
+            // Store velocity for prediction
+            existingPlayer.velocityX = velocityX;
+            existingPlayer.velocityY = velocityY;
+
+            // Store target position
             existingPlayer.targetX = newPlayerState.x;
             existingPlayer.targetY = newPlayerState.y;
+            existingPlayer.lastUpdateTime = now;
 
-            // If first time seeing target, snap to it
-            if (existingPlayer.targetX === undefined) {
+            // If first time, snap to position
+            if (existingPlayer.x === undefined || !existingPlayer.lastUpdateTime) {
                 existingPlayer.x = newPlayerState.x;
                 existingPlayer.y = newPlayerState.y;
             }
@@ -361,7 +374,7 @@ function updatePlayerMovement() {
         gameState.currentPlayer.y = Math.max(margin, Math.min(canvas.height - margin, gameState.currentPlayer.y));
 
         // Send position to server (throttle to reduce network traffic)
-        if (now - lastMoveTime > 30) { // Increased update rate to 33ms (~30fps)
+        if (now - lastMoveTime > 50) { // Balanced update rate: 50ms (~20fps)
             socket.emit('playerMove', {
                 x: gameState.currentPlayer.x,
                 y: gameState.currentPlayer.y
@@ -457,11 +470,20 @@ function drawCollectible(collectible) {
 function drawPlayer(player) {
     const isCurrentPlayer = player.id === socket.id;
 
-    // Smooth interpolation for remote players
+    // Advanced smooth interpolation + extrapolation for remote players
     if (!isCurrentPlayer && player.targetX !== undefined && player.targetY !== undefined) {
-        const lerpFactor = 0.3; // Smooth interpolation speed
-        player.x += (player.targetX - player.x) * lerpFactor;
-        player.y += (player.targetY - player.y) * lerpFactor;
+        const now = Date.now();
+        const timeSinceUpdate = now - (player.lastUpdateTime || now);
+
+        // Extrapolate position based on velocity (predict where they're going)
+        const extrapolationFactor = Math.min(timeSinceUpdate / 100, 1.5); // Max 150ms extrapolation
+        const predictedX = player.targetX + (player.velocityX || 0) * extrapolationFactor;
+        const predictedY = player.targetY + (player.velocityY || 0) * extrapolationFactor;
+
+        // Smooth interpolation towards predicted position
+        const lerpFactor = 0.25; // Smoother interpolation
+        player.x += (predictedX - player.x) * lerpFactor;
+        player.y += (predictedY - player.y) * lerpFactor;
     }
 
     // Reset canvas state to prevent bleeding between players

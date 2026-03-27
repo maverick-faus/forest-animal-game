@@ -348,8 +348,8 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
   });
 
-  // Periodic game state updates - increased frequency for smoother remote player movement
-  setInterval(() => {
+  // Periodic game state updates - optimized for interpolation + extrapolation
+  const updateInterval = setInterval(() => {
     const roomId = socket.data.roomId;
     if (roomId) {
       const room = rooms.get(roomId);
@@ -357,7 +357,12 @@ io.on('connection', (socket) => {
         io.to(roomId).emit('gameStateUpdate', room.getState());
       }
     }
-  }, 100); // 10 FPS server updates (reduced from 50ms to save bandwidth while keeping smooth interpolation)
+  }, 75); // 13 FPS server updates - balanced for smooth prediction
+
+  // Clean up interval on disconnect
+  socket.on('disconnect', () => {
+    clearInterval(updateInterval);
+  });
 });
 
 http.listen(PORT, () => {
