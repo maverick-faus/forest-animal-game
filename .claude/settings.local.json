@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find . -type f -name *.json -o -name *.html -o -name *.js)",
+      "Bash(npm install:*)",
+      "Bash(npm start:*)",
+      "Bash(netstat -ano)",
+      "Read(//c/Users/6117442/source/repos/Hack/ClaudeGame/**)",
+      "Bash(xargs -I {} taskkill //PID {} //F)",
+      "Bash(powershell.exe \"Get-Process -Name node -ErrorAction SilentlyContinue | Stop-Process -Force\")"
+    ]
+  }
+}

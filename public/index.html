@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forest Animal Game 🌲</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Join Screen -->
+    <div id="joinScreen" class="screen active">
+        <div class="join-container">
+            <h1 class="game-title">🌲 Forest Animal Game 🌲</h1>
+            <p class="game-subtitle">A Cute Multiplayer Adventure</p>
+            <div class="join-form">
+                <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="15" autocomplete="off">
+                <input type="text" id="roomIdInput" placeholder="Room Code (leave empty for new room)" maxlength="10" autocomplete="off">
+                <button id="joinButton" class="primary-button">Join Game</button>
+            </div>
+            <div id="joinError" class="error-message"></div>
+        </div>
+    </div>
+
+    <!-- Lobby Screen -->
+    <div id="lobbyScreen" class="screen">
+        <div class="lobby-container">
+            <h1 class="game-title lobby-title">🌳 Game Lobby 🌳</h1>
+
+            <!-- Animal Marquee -->
+            <div class="animal-marquee">
+                <div class="animal-marquee-content">
+                    <span class="marquee-animal">🐻</span>
+                    <span class="marquee-animal">🦫</span>
+                    <span class="marquee-animal">🦦</span>
+                    <span class="marquee-animal">🐰</span>
+                    <span class="marquee-animal">🦊</span>
+                    <span class="marquee-animal">🦝</span>
+                    <span class="marquee-animal">🐿️</span>
+                    <span class="marquee-animal">🦌</span>
+                    <span class="marquee-animal">🦔</span>
+                    <span class="marquee-animal">🦉</span>
+                    <!-- Duplicate for seamless loop -->
+                    <span class="marquee-animal">🐻</span>
+                    <span class="marquee-animal">🦫</span>
+                    <span class="marquee-animal">🦦</span>
+                    <span class="marquee-animal">🐰</span>
+                    <span class="marquee-animal">🦊</span>
+                    <span class="marquee-animal">🦝</span>
+                    <span class="marquee-animal">🐿️</span>
+                    <span class="marquee-animal">🦌</span>
+                    <span class="marquee-animal">🦔</span>
+                    <span class="marquee-animal">🦉</span>
+                </div>
+            </div>
+
+            <div class="room-code-display">
+                Room Code: <span id="roomCodeDisplay" class="room-code">----</span>
+                <button id="copyRoomCode" class="copy-button" title="Copy room code">📋</button>
+            </div>
+
+            <div class="lobby-content">
+                <!-- Instructions Card -->
+                <div class="instructions-card">
+                    <h2>📜 How to Play</h2>
+                    <div class="instruction-section">
+                        <h3>🎯 Objective</h3>
+                        <p>Collect the most forest items to win!</p>
+                    </div>
+                    <div class="instruction-section">
+                        <h3>🎮 Controls</h3>
+                        <p><strong>Arrow Keys</strong> or <strong>WASD</strong> - Move your animal</p>
+                        <p><strong>SPACEBAR</strong> - Activate speed boost ⚡</p>
+                    </div>
+                    <div class="instruction-section">
+                        <h3>✨ Special Ability</h3>
+                        <p>Press <strong>SPACEBAR</strong> for a <strong>50% speed boost</strong> for 5 seconds</p>
+                        <p class="warning">⏱️ Cooldown: 30 seconds between uses</p>
+                    </div>
+                    <div class="instruction-section">
+                        <h3>⭐ Collectibles & Points</h3>
+                        <ul class="collectibles-list">
+                            <li><span class="item-icon">🍓</span> Berries: <strong>1 point</strong></li>
+                            <li><span class="item-icon">🌰</span> Acorns: <strong>2 points</strong></li>
+                            <li><span class="item-icon">🍄</span> Mushrooms: <strong>3 points</strong></li>
+                            <li><span class="item-icon">🌼</span> Golden Flowers: <strong>5 points</strong></li>
+                        </ul>
+                    </div>
+                    <div class="instruction-section">
+                        <h3>⏱️ Duration</h3>
+                        <p><strong>2 minutes 30 seconds</strong></p>
+                        <p>Player with most points wins!</p>
+                    </div>
+                </div>
+
+                <!-- Players List -->
+                <div class="players-section">
+                    <h2>👥 Players</h2>
+                    <div class="player-count">
+                        <span id="playerCount">0</span>/10 joined
+                    </div>
+                    <div id="lobbyPlayersList" class="lobby-players-list"></div>
+                    <div class="lobby-actions">
+                        <p class="min-players-note">Minimum 3 players required</p>
+                        <button id="startGameButton" class="primary-button large-button">Start Game</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen" class="screen">
+        <div class="game-hud">
+            <div class="timer-display">
+                <span class="timer-label">⏱️</span>
+                <span id="timerDisplay">2:30</span>
+            </div>
+            <div id="scoreboard" class="scoreboard"></div>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+        <div class="ability-indicator" id="abilityIndicator">
+            <div class="ability-icon" id="abilityIcon">⚡</div>
+            <div class="ability-info">
+                <div class="ability-text" id="abilityText">SPACEBAR</div>
+                <div class="ability-progress-container" id="abilityProgressContainer">
+                    <div class="ability-progress-bar" id="abilityProgressBar"></div>
+                </div>
+            </div>
+            <div class="ability-countdown" id="abilityCountdown"></div>
+        </div>
+    </div>
+
+    <!-- Results Screen -->
+    <div id="resultsScreen" class="screen">
+        <div class="results-container">
+            <h1 class="game-title">🏆 Game Over! 🏆</h1>
+            <div class="winner-announcement" id="winnerAnnouncement"></div>
+            <div class="final-scoreboard" id="finalScoreboard"></div>
+            <button id="playAgainButton" class="primary-button large-button">Play Again</button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
