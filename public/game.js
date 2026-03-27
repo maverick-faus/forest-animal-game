@@ -1,7 +1,7 @@
-// Game client code
+// Activity client code
 const socket = io();
 
-// Game state
+// Session state
 let gameState = {
     currentScreen: 'join',
     roomId: null,
@@ -621,7 +621,7 @@ function displayResults() {
     if (winnerAnnouncement && winner) {
         winnerAnnouncement.innerHTML = `
             <div class="winner-animal">${ANIMAL_EMOJIS[winner.animal]}</div>
-            <h2>🎉 Winner! 🎉</h2>
+            <h2>🎉 Top Performer! 🎉</h2>
             <div class="winner-name">${winner.name}</div>
             <div class="winner-score">${winner.score} points</div>
         `;

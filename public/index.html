@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forest Animal Game 🌲</title>
+    <title>Forest Animal Activity 🌲</title>
+    <meta name="description" content="Interactive forest animal collection activity">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <!-- Join Screen -->
     <div id="joinScreen" class="screen active">
         <div class="join-container">
-            <h1 class="game-title">🌲 Forest Animal Game 🌲</h1>
-            <p class="game-subtitle">A Cute Multiplayer Adventure</p>
+            <h1 class="game-title">🌲 Forest Animal Activity 🌲</h1>
+            <p class="game-subtitle">An Interactive Multiplayer Experience</p>
             <div class="join-form">
                 <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="15" autocomplete="off">
                 <input type="text" id="roomIdInput" placeholder="Room Code (leave empty for new room)" maxlength="10" autocomplete="off">
-                <button id="joinButton" class="primary-button">Join Game</button>
+                <button id="joinButton" class="primary-button">Join Session</button>
             </div>
             <div id="joinError" class="error-message"></div>
         </div>
@@ -24,7 +25,7 @@
     <!-- Lobby Screen -->
     <div id="lobbyScreen" class="screen">
         <div class="lobby-container">
-            <h1 class="game-title lobby-title">🌳 Game Lobby 🌳</h1>
+            <h1 class="game-title lobby-title">🌳 Waiting Room 🌳</h1>
 
             <!-- Animal Marquee -->
             <div class="animal-marquee">
@@ -61,10 +62,10 @@
             <div class="lobby-content">
                 <!-- Instructions Card -->
                 <div class="instructions-card">
-                    <h2>📜 How to Play</h2>
+                    <h2>📜 Instructions</h2>
                     <div class="instruction-section">
                         <h3>🎯 Objective</h3>
-                        <p>Collect the most forest items to win!</p>
+                        <p>Collect the most forest items to achieve top performance!</p>
                     </div>
                     <div class="instruction-section">
                         <h3>🎮 Controls</h3>
@@ -88,20 +89,20 @@
                     <div class="instruction-section">
                         <h3>⏱️ Duration</h3>
                         <p><strong>2 minutes 30 seconds</strong></p>
-                        <p>Player with most points wins!</p>
+                        <p>Participant with most points achieves top performance!</p>
                     </div>
                 </div>
 
-                <!-- Players List -->
+                <!-- Users List -->
                 <div class="players-section">
-                    <h2>👥 Players</h2>
+                    <h2>👥 Participants</h2>
                     <div class="player-count">
                         <span id="playerCount">0</span>/10 joined
                     </div>
                     <div id="lobbyPlayersList" class="lobby-players-list"></div>
                     <div class="lobby-actions">
-                        <p class="min-players-note">Minimum 3 players required</p>
-                        <button id="startGameButton" class="primary-button large-button">Start Game</button>
+                        <p class="min-players-note">Minimum 3 participants required</p>
+                        <button id="startGameButton" class="primary-button large-button">Start Session</button>
                     </div>
                 </div>
             </div>
@@ -133,10 +134,10 @@
     <!-- Results Screen -->
     <div id="resultsScreen" class="screen">
         <div class="results-container">
-            <h1 class="game-title">🏆 Game Over! 🏆</h1>
+            <h1 class="game-title">🏆 Session Complete! 🏆</h1>
             <div class="winner-announcement" id="winnerAnnouncement"></div>
             <div class="final-scoreboard" id="finalScoreboard"></div>
-            <button id="playAgainButton" class="primary-button large-button">Play Again</button>
+            <button id="playAgainButton" class="primary-button large-button">Start New Session</button>
         </div>
     </div>
 

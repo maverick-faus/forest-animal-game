@@ -1,7 +1,7 @@
 {
-  "name": "forest-animal-game",
+  "name": "forest-animal-activity",
   "version": "1.0.0",
-  "description": "Multiplayer forest animal collection game",
+  "description": "Interactive forest animal collection activity",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,7 +10,7 @@
   "engines": {
     "node": ">=14.0.0"
   },
-  "keywords": ["game", "multiplayer", "websocket"],
+  "keywords": ["interactive", "multiplayer", "websocket", "activity"],
   "author": "",
   "license": "MIT",
   "dependencies": {

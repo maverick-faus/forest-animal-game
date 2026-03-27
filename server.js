@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 // Serve static files
 app.use(express.static('public'));
 
-// Game rooms storage
+// Session rooms storage
 const rooms = new Map();
 
 // Animal types available
@@ -23,8 +23,8 @@ const COLLECTIBLES = [
   { type: 'flower', points: 5, color: '#FFD700', spawnChance: 0.05 }
 ];
 
-const GAME_DURATION = 150000; // 2.5 minutes in milliseconds (production)
-// const GAME_DURATION = 15000; // 15 seconds (testing)
+const SESSION_DURATION = 150000; // 2.5 minutes in milliseconds (production)
+// const SESSION_DURATION = 15000; // 15 seconds (testing)
 const COLLECTIBLE_LIFETIME = 8000; // 8 seconds
 const SPAWN_INTERVAL = 1500; // Spawn every 1.5 seconds
 const SPEED_BOOST_COOLDOWN = 30000; // 30 seconds cooldown
@@ -111,7 +111,7 @@ class GameRoom {
     // End game after duration
     this.gameEndTimeout = setTimeout(() => {
       this.endGame();
-    }, GAME_DURATION);
+    }, SESSION_DURATION);
 
     return true;
   }
@@ -190,7 +190,7 @@ class GameRoom {
       players: Array.from(this.players.values()),
       collectibles: this.collectibles,
       gameStartTime: this.gameStartTime,
-      gameDuration: GAME_DURATION
+      gameDuration: SESSION_DURATION
     };
   }
 }
@@ -361,6 +361,6 @@ io.on('connection', (socket) => {
 });
 
 http.listen(PORT, () => {
-  console.log(`🎮 Forest Animal Game server running on port ${PORT}`);
-  console.log(`🌐 Open http://localhost:${PORT} to play!`);
+  console.log(`🌲 Forest Animal Activity server running on port ${PORT}`);
+  console.log(`🌐 Open http://localhost:${PORT} to participate!`);
 });
