@@ -135,52 +135,24 @@ socket.on('joinError', (message) => {
 });
 
 socket.on('gameStateUpdate', (state) => {
-    const now = Date.now();
-
-    // Advanced interpolation with velocity prediction for remote players
-    state.players.forEach(newPlayerState => {
-        const existingPlayer = gameState.players.find(p => p.id === newPlayerState.id);
-
-        if (existingPlayer && newPlayerState.id !== socket.id) {
-            // Calculate velocity from position change
-            const oldX = existingPlayer.targetX || existingPlayer.x;
-            const oldY = existingPlayer.targetY || existingPlayer.y;
-            const velocityX = newPlayerState.x - oldX;
-            const velocityY = newPlayerState.y - oldY;
-
-            // Store velocity for prediction
-            existingPlayer.velocityX = velocityX;
-            existingPlayer.velocityY = velocityY;
-
-            // Store target position
-            existingPlayer.targetX = newPlayerState.x;
-            existingPlayer.targetY = newPlayerState.y;
-            existingPlayer.lastUpdateTime = now;
-
-            // If first time, snap to position
-            if (existingPlayer.x === undefined || !existingPlayer.lastUpdateTime) {
-                existingPlayer.x = newPlayerState.x;
-                existingPlayer.y = newPlayerState.y;
-            }
-
-            // Update other properties immediately
-            existingPlayer.score = newPlayerState.score;
-            existingPlayer.speedBoostActive = newPlayerState.speedBoostActive;
-            existingPlayer.speedBoostAvailable = newPlayerState.speedBoostAvailable;
-            existingPlayer.speedBoostEndTime = newPlayerState.speedBoostEndTime;
-            existingPlayer.speedBoostCooldownEnd = newPlayerState.speedBoostCooldownEnd;
-            existingPlayer.speedBoostLastUsed = newPlayerState.speedBoostLastUsed;
-        }
-    });
+    // Update remote players only - preserve current player's client-side position
+    const myCurrentPosition = gameState.currentPlayer ? {
+        x: gameState.currentPlayer.x,
+        y: gameState.currentPlayer.y
+    } : null;
 
     gameState.players = state.players;
     gameState.collectibles = state.collectibles;
     gameState.gameStartTime = state.gameStartTime;
     gameState.gameDuration = state.gameDuration;
 
-    // Update current player reference
+    // Restore current player's client-side position (don't let server override it)
     const currentPlayer = state.players.find(p => p.id === socket.id);
-    if (currentPlayer) {
+    if (currentPlayer && myCurrentPosition) {
+        currentPlayer.x = myCurrentPosition.x;
+        currentPlayer.y = myCurrentPosition.y;
+        gameState.currentPlayer = currentPlayer;
+    } else if (currentPlayer) {
         gameState.currentPlayer = currentPlayer;
     }
 
@@ -464,10 +436,18 @@ function drawCollectible(collectible) {
     const age = Date.now() - collectible.spawnTime;
     const lifetime = 8000;
 
-    // Fade out only in the last second (and keep minimum opacity at 0.6)
-    let alpha = 1;
+    // Stay completely solid for 7 seconds, then dramatic fade in last second
+    let alpha = 1.0;
     if (age > lifetime - 1000) {
-        alpha = Math.max(0.6, (lifetime - age) / 1000);
+        // Dramatic fade from 100% to 30% in the last second
+        alpha = Math.max(0.3, (lifetime - age) / 1000);
+    }
+
+    // Pulsing effect when about to expire (last 2 seconds)
+    let scale = 1.0;
+    if (age > lifetime - 2000) {
+        const pulseSpeed = 0.005; // How fast it pulses
+        scale = 1.0 + Math.sin(age * pulseSpeed) * 0.1; // Pulse between 0.9x and 1.1x
     }
 
     // Draw shadow
@@ -476,45 +456,38 @@ function drawCollectible(collectible) {
     ctx.ellipse(collectible.x, collectible.y + 35, 15, 5, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Draw collectible emoji
+    // Draw collectible emoji with scale
     ctx.globalAlpha = alpha;
+    ctx.save();
+    ctx.translate(collectible.x, collectible.y);
+    ctx.scale(scale, scale);
+
     ctx.font = '40px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
     // Bobbing animation
     const bob = Math.sin(Date.now() / 300 + collectible.id) * 3;
-    ctx.fillText(COLLECTIBLE_EMOJIS[collectible.type], collectible.x, collectible.y + bob);
+    ctx.fillText(COLLECTIBLE_EMOJIS[collectible.type], 0, bob);
 
-    // Draw point value
+    ctx.restore();
+
+    // Draw point value (always solid for clarity)
+    ctx.globalAlpha = 1;
     ctx.font = 'bold 14px Arial';
     ctx.fillStyle = 'white';
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 3;
     ctx.strokeText(`+${collectible.points}`, collectible.x, collectible.y - 25 + bob);
     ctx.fillText(`+${collectible.points}`, collectible.x, collectible.y - 25 + bob);
-
-    ctx.globalAlpha = 1;
 }
 
 function drawPlayer(player) {
     const isCurrentPlayer = player.id === socket.id;
 
-    // Advanced smooth interpolation + extrapolation for remote players
-    if (!isCurrentPlayer && player.targetX !== undefined && player.targetY !== undefined) {
-        const now = Date.now();
-        const timeSinceUpdate = now - (player.lastUpdateTime || now);
-
-        // Extrapolate position based on velocity (predict where they're going)
-        const extrapolationFactor = Math.min(timeSinceUpdate / 100, 1.5); // Max 150ms extrapolation
-        const predictedX = player.targetX + (player.velocityX || 0) * extrapolationFactor;
-        const predictedY = player.targetY + (player.velocityY || 0) * extrapolationFactor;
-
-        // Smooth interpolation towards predicted position
-        const lerpFactor = 0.25; // Smoother interpolation
-        player.x += (predictedX - player.x) * lerpFactor;
-        player.y += (predictedY - player.y) * lerpFactor;
-    }
+    // NO interpolation - just draw players where they are
+    // Current player: controlled 100% client-side
+    // Remote players: accept server position as-is
 
     // Reset canvas state to prevent bleeding between players
     ctx.setLineDash([]);
