@@ -130,6 +130,31 @@ socket.on('joinError', (message) => {
 });
 
 socket.on('gameStateUpdate', (state) => {
+    // Smooth interpolation for remote players
+    state.players.forEach(newPlayerState => {
+        const existingPlayer = gameState.players.find(p => p.id === newPlayerState.id);
+
+        if (existingPlayer && newPlayerState.id !== socket.id) {
+            // Store target position for smooth interpolation
+            existingPlayer.targetX = newPlayerState.x;
+            existingPlayer.targetY = newPlayerState.y;
+
+            // If first time seeing target, snap to it
+            if (existingPlayer.targetX === undefined) {
+                existingPlayer.x = newPlayerState.x;
+                existingPlayer.y = newPlayerState.y;
+            }
+
+            // Update other properties immediately
+            existingPlayer.score = newPlayerState.score;
+            existingPlayer.speedBoostActive = newPlayerState.speedBoostActive;
+            existingPlayer.speedBoostAvailable = newPlayerState.speedBoostAvailable;
+            existingPlayer.speedBoostEndTime = newPlayerState.speedBoostEndTime;
+            existingPlayer.speedBoostCooldownEnd = newPlayerState.speedBoostCooldownEnd;
+            existingPlayer.speedBoostLastUsed = newPlayerState.speedBoostLastUsed;
+        }
+    });
+
     gameState.players = state.players;
     gameState.collectibles = state.collectibles;
     gameState.gameStartTime = state.gameStartTime;
@@ -431,6 +456,13 @@ function drawCollectible(collectible) {
 
 function drawPlayer(player) {
     const isCurrentPlayer = player.id === socket.id;
+
+    // Smooth interpolation for remote players
+    if (!isCurrentPlayer && player.targetX !== undefined && player.targetY !== undefined) {
+        const lerpFactor = 0.3; // Smooth interpolation speed
+        player.x += (player.targetX - player.x) * lerpFactor;
+        player.y += (player.targetY - player.y) * lerpFactor;
+    }
 
     // Reset canvas state to prevent bleeding between players
     ctx.setLineDash([]);

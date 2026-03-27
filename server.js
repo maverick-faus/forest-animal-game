@@ -348,7 +348,7 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
   });
 
-  // Periodic game state updates
+  // Periodic game state updates - increased frequency for smoother remote player movement
   setInterval(() => {
     const roomId = socket.data.roomId;
     if (roomId) {
@@ -357,7 +357,7 @@ io.on('connection', (socket) => {
         io.to(roomId).emit('gameStateUpdate', room.getState());
       }
     }
-  }, 50); // 20 FPS server updates
+  }, 100); // 10 FPS server updates (reduced from 50ms to save bandwidth while keeping smooth interpolation)
 });
 
 http.listen(PORT, () => {
