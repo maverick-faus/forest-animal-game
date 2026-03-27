@@ -447,39 +447,67 @@ function drawCollectible(collectible) {
     let scale = 1.0;
     if (age > lifetime - 2000) {
         const pulseSpeed = 0.005; // How fast it pulses
-        scale = 1.0 + Math.sin(age * pulseSpeed) * 0.1; // Pulse between 0.9x and 1.1x
+        scale = 1.0 + Math.sin(age * pulseSpeed) * 0.15; // Pulse between 0.85x and 1.15x
     }
-
-    // Draw shadow
-    ctx.fillStyle = `rgba(0, 0, 0, ${0.2 * alpha})`;
-    ctx.beginPath();
-    ctx.ellipse(collectible.x, collectible.y + 35, 15, 5, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Draw collectible emoji with scale
-    ctx.globalAlpha = alpha;
-    ctx.save();
-    ctx.translate(collectible.x, collectible.y);
-    ctx.scale(scale, scale);
-
-    ctx.font = '40px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
 
     // Bobbing animation
     const bob = Math.sin(Date.now() / 300 + collectible.id) * 3;
-    ctx.fillText(COLLECTIBLE_EMOJIS[collectible.type], 0, bob);
+
+    // Draw bright background circle for visibility
+    ctx.globalAlpha = alpha;
+    ctx.save();
+    ctx.translate(collectible.x, collectible.y + bob);
+    ctx.scale(scale, scale);
+
+    // Bright white glow
+    ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+    ctx.shadowBlur = 15;
+
+    // Solid colored background based on type
+    const bgColors = {
+        'berry': '#FF6B6B',    // Bright red
+        'acorn': '#CD853F',    // Golden brown
+        'mushroom': '#FF69B4', // Hot pink
+        'flower': '#FFD700'    // Gold
+    };
+
+    ctx.fillStyle = bgColors[collectible.type];
+    ctx.beginPath();
+    ctx.arc(0, 0, 28, 0, Math.PI * 2);
+    ctx.fill();
+
+    // White outline for contrast
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Reset shadow
+    ctx.shadowBlur = 0;
+
+    // Draw collectible emoji - LARGER and more visible
+    ctx.font = 'bold 45px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(COLLECTIBLE_EMOJIS[collectible.type], 0, 0);
 
     ctx.restore();
 
-    // Draw point value (always solid for clarity)
+    // Draw point value (always solid for clarity) with better visibility
     ctx.globalAlpha = 1;
-    ctx.font = 'bold 14px Arial';
-    ctx.fillStyle = 'white';
+    ctx.font = 'bold 16px Arial';
+    ctx.fillStyle = '#FFD700'; // Gold color
     ctx.strokeStyle = 'black';
-    ctx.lineWidth = 3;
-    ctx.strokeText(`+${collectible.points}`, collectible.x, collectible.y - 25 + bob);
-    ctx.fillText(`+${collectible.points}`, collectible.x, collectible.y - 25 + bob);
+    ctx.lineWidth = 4;
+    ctx.strokeText(`+${collectible.points}`, collectible.x, collectible.y - 35 + bob);
+    ctx.fillText(`+${collectible.points}`, collectible.x, collectible.y - 35 + bob);
+
+    // Draw shadow (after to not interfere)
+    ctx.globalAlpha = 0.3 * alpha;
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.ellipse(collectible.x, collectible.y + 40, 18, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
 }
 
 function drawPlayer(player) {
