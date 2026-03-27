@@ -26,7 +26,7 @@ const COLLECTIBLES = [
 const SESSION_DURATION = 150000; // 2.5 minutes in milliseconds (production)
 // const SESSION_DURATION = 15000; // 15 seconds (testing)
 const COLLECTIBLE_LIFETIME = 8000; // 8 seconds
-const SPAWN_INTERVAL = 1500; // Spawn every 1.5 seconds
+const SPAWN_RATE_PER_PLAYER = 3000; // Target: 1 item per 3 seconds per player
 const SPEED_BOOST_COOLDOWN = 30000; // 30 seconds cooldown
 const SPEED_BOOST_DURATION = 5000; // 5 seconds duration
 
@@ -103,10 +103,17 @@ class GameRoom {
       player.speedBoostCooldownEnd = null;
     });
 
+    // Calculate spawn interval based on player count
+    // More players = spawn items more frequently
+    const playerCount = this.players.size;
+    const spawnInterval = Math.max(500, SPAWN_RATE_PER_PLAYER / playerCount);
+
+    console.log(`Starting game with ${playerCount} players. Spawn interval: ${spawnInterval}ms`);
+
     // Start spawning collectibles
     this.spawnInterval = setInterval(() => {
       this.spawnCollectible();
-    }, SPAWN_INTERVAL);
+    }, spawnInterval);
 
     // End game after duration
     this.gameEndTimeout = setTimeout(() => {
